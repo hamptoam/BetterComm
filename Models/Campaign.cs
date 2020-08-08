@@ -22,6 +22,8 @@ namespace BetterComm.Models
         public string CampaignName { get; set; }
  
        // public List<Employee> assignedCallers { get; set;}
+
+        [NotMapped]
         public virtual ICollection<Employee> Employees { get; set; }
 
         [DataType(DataType.Date)]
