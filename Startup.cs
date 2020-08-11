@@ -14,6 +14,7 @@ using BetterComm.Models;
 namespace BetterComm
 {
     public class Startup
+
     {
         public Startup(IConfiguration configuration)
         {
@@ -71,13 +72,15 @@ namespace BetterComm
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider services)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             }
+
+
             else
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -99,6 +102,12 @@ namespace BetterComm
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
+
+            using (var scope =
+            app.ApplicationServices.CreateScope())
+            using (var context = scope.ServiceProvider.GetService<DbContext>())
+                context.Database.Migrate();
         }
     }
 }
+
