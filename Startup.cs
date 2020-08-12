@@ -1,7 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BetterComm.Models;
-
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace BetterComm
 {
@@ -30,14 +31,16 @@ namespace BetterComm
             services.AddDbContext<ApplicationDbContext>(options =>
                        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-
-            services.AddControllersWithViews();
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+               .AddRoles<IdentityRole>()
+              .AddEntityFrameworkStores<ApplicationDbContext>() 
+              .AddDefaultUI();
 
             services.AddMvc();
 
+            /*services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
+
+            
             services.Configure<IdentityOptions>(options =>
             {
                 // Password settings.
@@ -68,7 +71,7 @@ namespace BetterComm
                 options.LoginPath = "/Identity/Account/Login";
                 options.AccessDeniedPath = "/Identity/Account/AccessDenied";
                 options.SlidingExpiration = true;
-            });
+            }); */
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,7 +82,6 @@ namespace BetterComm
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
             }
-
 
             else
             {
@@ -103,11 +105,29 @@ namespace BetterComm
                 endpoints.MapRazorPages();
             });
 
-            using (var scope =
-            app.ApplicationServices.CreateScope())
-            using (var context = scope.ServiceProvider.GetService<DbContext>())
-                context.Database.Migrate();
+          //  CreateRoles(services).(ApplicationUser);
         }
+
+        private async Task CreateRoles(IServiceProvider serviceProvider)
+        {
+            var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var UserManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
+            IdentityResult roleResult;
+            //here in this line we are adding Admin Role
+            var roleCheck = await RoleManager.RoleExistsAsync("Admin");
+            if (!roleCheck)
+            {
+                //here in this line we are creating admin role and seed it to the database
+                roleResult = await RoleManager.CreateAsync(new IdentityRole("Admin"));
+            }
+            //here we are assigning the Admin role to the User that we have registered above 
+            //Now, we are assinging admin role to this user("Ali@gmail.com"). When will we run this project then it will
+            //be assigned to that user.
+            IdentityUser user = await UserManager.FindByEmailAsync("Ali@gmail.com");
+            var User = new IdentityUser();
+            await UserManager.AddToRoleAsync(user, "Admin");
+        } 
     }
 }
 
