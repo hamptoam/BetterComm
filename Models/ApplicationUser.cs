@@ -9,15 +9,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BetterComm.Models
 {
-    public abstract class ApplicationUser : IdentityUser
+    public class ApplicationUser : IdentityUser
     {
-        [PersonalData]
-        public string FirstName { get; set; }
-
-        [PersonalData]
-        public string LastName { get; set; }
-
-        [NotMapped]
-        public string FullName => $"{FirstName} {LastName}";
+        public string Name { get; set; }
+        public string DateOfBirth { get; set; }
+        public string Password { get; set; }
     }
 }

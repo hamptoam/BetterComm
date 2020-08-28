@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using BetterComm.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace BetterComm.Models
+namespace BetterComm.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {

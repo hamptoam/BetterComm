@@ -1,9 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity.UI;
-
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using BetterComm.Models;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using BetterComm.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BetterComm
 {
@@ -33,14 +32,21 @@ namespace BetterComm
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                .AddRoles<IdentityRole>()
-              .AddEntityFrameworkStores<ApplicationDbContext>() 
-              .AddDefaultUI();
+              .AddEntityFrameworkStores<ApplicationDbContext>();
+             // .AddDefaultUI();
 
-            services.AddMvc();
+            services.AddControllersWithViews();
 
-            /*services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
+            services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
 
-            
+            // services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
+
+
             services.Configure<IdentityOptions>(options =>
             {
                 // Password settings.
@@ -71,11 +77,11 @@ namespace BetterComm
                 options.LoginPath = "/Identity/Account/Login";
                 options.AccessDeniedPath = "/Identity/Account/AccessDenied";
                 options.SlidingExpiration = true;
-            }); */
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider services)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -105,15 +111,16 @@ namespace BetterComm
                 endpoints.MapRazorPages();
             });
 
-          //  CreateRoles(services).(ApplicationUser);
+            CreateRoles(serviceProvider);
         }
 
-        private async Task CreateRoles(IServiceProvider serviceProvider)
+   private async Task CreateRoles(IServiceProvider serviceProvider)
         {
             var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var UserManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
-
+            var UserManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            string[] roleNames = { "Admin", "Manager", "Employee" };
             IdentityResult roleResult;
+
             //here in this line we are adding Admin Role
             var roleCheck = await RoleManager.RoleExistsAsync("Admin");
             if (!roleCheck)
@@ -126,8 +133,9 @@ namespace BetterComm
             //be assigned to that user.
             IdentityUser user = await UserManager.FindByEmailAsync("Ali@gmail.com");
             var User = new IdentityUser();
-            await UserManager.AddToRoleAsync(user, "Admin");
-        } 
+            await UserManager.AddToRoleAsync((ApplicationUser)user, "Admin");
+        }
+
     }
 }
 
