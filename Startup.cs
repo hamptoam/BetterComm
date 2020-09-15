@@ -128,6 +128,19 @@ namespace BetterComm
                 //here in this line we are creating admin role and seed it to the database
                 roleResult = await RoleManager.CreateAsync(new IdentityRole("Admin"));
             }
+
+            if (!roleCheck)
+            {
+                //here in this line we are creating admin role and seed it to the database
+                roleResult = await RoleManager.CreateAsync(new IdentityRole("Manager"));
+            }
+
+            if (!roleCheck)
+            {
+                //here in this line we are creating admin role and seed it to the database
+                roleResult = await RoleManager.CreateAsync(new IdentityRole("Employee"));
+            }
+
             //here we are assigning the Admin role to the User that we have registered above 
             //Now, we are assinging admin role to this user("Ali@gmail.com"). When will we run this project then it will
             //be assigned to that user.

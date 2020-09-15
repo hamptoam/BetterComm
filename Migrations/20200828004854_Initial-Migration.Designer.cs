@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BetterComm.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200827181848_Fixing-Identity")]
-    partial class FixingIdentity
+    [Migration("20200828004854_Initial-Migration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
