@@ -30,13 +30,21 @@ namespace BetterComm
             services.AddDbContext<ApplicationDbContext>(options =>
                        options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-               .AddRoles<IdentityRole>()
-              .AddEntityFrameworkStores<ApplicationDbContext>();
-             // .AddDefaultUI();
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders()
+                .AddDefaultUI();
 
             services.AddControllersWithViews();
 
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                // Default Lockout settings.
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.AllowedForNewUsers = true;
+            });
             services.AddAuthorization(options =>
             {
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -44,7 +52,8 @@ namespace BetterComm
                     .Build();
             });
 
-            // services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
+
+             services.AddScoped<UserManager<ApplicationUser>, UserManager<ApplicationUser>>();
 
 
             services.Configure<IdentityOptions>(options =>
@@ -114,7 +123,7 @@ namespace BetterComm
             CreateRoles(serviceProvider);
         }
 
-   private async Task CreateRoles(IServiceProvider serviceProvider)
+        private async Task CreateRoles(IServiceProvider serviceProvider)
         {
             var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var UserManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -144,9 +153,9 @@ namespace BetterComm
             //here we are assigning the Admin role to the User that we have registered above 
             //Now, we are assinging admin role to this user("Ali@gmail.com"). When will we run this project then it will
             //be assigned to that user.
-            IdentityUser user = await UserManager.FindByEmailAsync("Ali@gmail.com");
+           /* IdentityUser user = await UserManager.FindByEmailAsync("Ali@gmail.com");
             var User = new IdentityUser();
-            await UserManager.AddToRoleAsync((ApplicationUser)user, "Admin");
+            await UserManager.AddToRoleAsync((ApplicationUser)user, "Admin"); */
         }
 
     }

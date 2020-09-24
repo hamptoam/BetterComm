@@ -14,7 +14,7 @@ namespace BetterComm.Controllers
 {
     public class HomeController : Controller
     {
-        //private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<HomeController> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
@@ -84,7 +84,7 @@ namespace BetterComm.Controllers
 
             var user = new ApplicationUser
             {
-                Id = "101",
+                Id = appUser.Id,
                 UserName = appUser.UserName,
                 Email = appUser.Email,
                 Name = appUser.Name,
@@ -111,6 +111,45 @@ namespace BetterComm.Controllers
             return View();
         }
 
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        {
+            var appUser = new ApplicationUser { }; 
+
+            returnUrl = returnUrl ?? Url.Content("~/");
+
+            if (ModelState.IsValid)
+            {
+                var result = await _signInManager.PasswordSignInAsync(appUser.Email,
+                   appUser.Password, appUser.RememberMe,
+                    lockoutOnFailure: false);
+                if (result.Succeeded)
+                {
+                    _logger.LogInformation("User logged in.");
+                    return LocalRedirect(returnUrl);
+                }
+                if (result.RequiresTwoFactor)
+                {
+                    return RedirectToPage("./LoginWith2fa", new
+                    {
+                        ReturnUrl = returnUrl,
+                        appUser.RememberMe
+                    });
+                }
+                if (result.IsLockedOut)
+                {
+                    _logger.LogWarning("User account locked out.");
+                    return RedirectToPage("./Lockout");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    return View();
+                }
+            }
+
+            // If we got this far, something failed, redisplay form
+            return View();
+        }
         public async Task<IActionResult> LogOut(string username, string password)
         {
             await _signInManager.SignOutAsync();
